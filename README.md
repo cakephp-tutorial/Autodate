@@ -26,7 +26,7 @@ class AppModel extends Model {
 }
 ```
 
-### Available date Formats ###
+#### Available date Formats ####
 
 * 'd-m-Y'
 * 'd/m/Y'
@@ -38,3 +38,24 @@ class AppModel extends Model {
 * 'm/d/Y'
 * 'Ymd'
 * 'Ydm'
+
+## Installation ##
+
+### Using composer ###
+
+```
+{
+    "require": {
+        "cakephp-tutorial/autodate": "1.0.0"
+    }
+}
+```
+
+### Manually Installation ###
+
+* Download from github https://github.com/cakephp-tutorial/Autodate
+* copy in app/Plugin/Autodate
+* enable in app/Config/bootstrap.php
+```php
+CakePlugin::load('Autodate');
+```

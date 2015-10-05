@@ -1,0 +1,27 @@
+{
+	"name": "cakephp-tutorial/autodate",
+	"description": "Automatically convert date fields",
+	"type": "cakephp-plugin",
+	"keywords": ["cakephp", "date", "converter"],
+	"homepage": "https://github.com/cakephp-tutorial/Autodate",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "CakePHP-Tutorial",
+			"email": "info@cakephp-tutorial.it",
+			"homepage": "http://www.cakephp-tutorial.it"
+		}
+	],
+	"support": {
+		"email": "info@cakephp-tutorial.it",
+		"issues": "https://github.com/cakephp-tutorial/Autodate/issues",
+		"source": "https://github.com/cakephp-tutorial/Autodate"
+	},
+	"require": {
+		"php": ">=5.2.0",
+        "composer/installers": "*"
+	},
+	"extra": {
+		"installer-name": "Autodate"
+	}
+}

@@ -25,3 +25,16 @@ class AppModel extends Model {
     );
 }
 ```
+
+### Available date Formats ###
+
+* 'd-m-Y'
+* 'd/m/Y'
+* 'Y/m/d'
+* 'Y-m-d'
+* 'Y-d-m'
+* 'Y/d/m'
+* 'm-d-Y'
+* 'm/d/Y'
+* 'Ymd'
+* 'Ydm'

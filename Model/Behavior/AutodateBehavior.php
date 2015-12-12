@@ -80,7 +80,7 @@ class AutodateBehavior extends ModelBehavior {
         if ($model->findQueryType == 'count') return $query;
 
         //-- if conditions exists
-        if (isset($query['conditions'])) {
+        if (isset($query['conditions']) && is_array($query['conditions'])) {
             $columnTypes = $model->getColumnTypes();
             $fields = array_filter($columnTypes, array($this, 'valueIsDate'));
 

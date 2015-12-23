@@ -87,14 +87,25 @@ class AutodateBehavior extends ModelBehavior {
             //-- Get all conditions keys
             $conditionsKeys  = array_keys($query['conditions']);
             $walked          = array();
+
             foreach($conditionsKeys as $conKey) {
                 $cond = explode(' ', $conKey);
-
-                if (!in_array($cond[0], $fields)) {
+                $cond[0] = str_replace($model->name.'.', null, $cond[0]);
+                if (!array_key_exists($cond[0], $fields)) {
                     continue;
                 }
-                $curObj = $this->dateObject($query['conditions'][$conKey]);
-                $walked[$conKey] = $this->ObjectToSQL($curObj);
+                $values = $query['conditions'][$conKey];
+                if (is_array($values) ) {
+                    foreach($values as $key => $date) {
+                        $tmpdate = $this->dateObject($date);
+                        $query['conditions'][$conKey][$key] = $this->ObjectToSQL($tmpdate);
+                    }
+                    $walked[$conKey] = $query['conditions'][$conKey];
+                }
+                elseif(is_string($values)) {
+                  $curObj = $this->dateObject($values);
+                  $walked[$conKey] = $this->ObjectToSQL($curObj);
+                }
             }
             $query['conditions'] = array_merge($query['conditions'], $walked);
         }

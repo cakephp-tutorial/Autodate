@@ -2,7 +2,7 @@
 	"name": "cakephp-tutorial/autodate",
 	"description": "Automatically convert date fields",
 	"type": "cakephp-plugin",
-	"keywords": ["cakephp", "date", "converter"],
+	"keywords": ["cakephp", "date", "converter", "plugin", "behavior"],
 	"homepage": "https://github.com/cakephp-tutorial/Autodate",
 	"license": "MIT",
 	"authors": [
@@ -21,6 +21,9 @@
 		"php": ">=5.2.0",
         "composer/installers": "*"
 	},
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    },
 	"extra": {
 		"installer-name": "Autodate"
 	}

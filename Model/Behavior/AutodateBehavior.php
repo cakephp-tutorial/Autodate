@@ -1,6 +1,7 @@
 <?php
 App::uses('ModelBehavior', 'Model');
 App::uses('AutodateException', 'Autodate.Lib');
+
 /**
  * @todo strtotime might confuse dates (eg: Y-d-m / Y-m-d) always pass same format
  * @todo beforeValidate
@@ -12,7 +13,7 @@ App::uses('AutodateException', 'Autodate.Lib');
  * @todo Refactory array_filter and getColumnTypes() in a single method
  **/
 class AutodateBehavior extends ModelBehavior {
-     /**
+    /**
      * @type Array
      **/
     private $defaults = array(
@@ -37,6 +38,7 @@ class AutodateBehavior extends ModelBehavior {
      * @type Array
      **/
     private $columntypes = array('date');
+
     /**
      * @todo
      * @throws Exception
@@ -44,9 +46,11 @@ class AutodateBehavior extends ModelBehavior {
     public function setup(Model $model, $settings = array()) {
         $this->settings = array_merge($this->defaults, $settings);
         if (!in_array($this->settings['dateformat'], $this->allowedFormats)) {
-            throw new AutodateException(__('Date format not allowed. Allowed Formats: %s', implode(', ', $this->allowedFormats)));
+            throw new AutodateException(__('Date format not allowed. Allowed Formats: %s',
+                implode(', ', $this->allowedFormats)));
         }
     }
+
     /**
      * Before save convert data to sqlformat
      *
@@ -59,7 +63,9 @@ class AutodateBehavior extends ModelBehavior {
 
         $fields = array_filter($columnTypes, array($this, 'valueIsDate'));
         foreach ($fields as $field => $value) {
-            if (!array_key_exists($field, $model->data[$model->alias])) continue;
+            if (!array_key_exists($field, $model->data[$model->alias])) {
+                continue;
+            }
             $date = $this->dateObject($model->data[$model->alias][$field]);
             if (!$date) {
                 return false;
@@ -68,63 +74,71 @@ class AutodateBehavior extends ModelBehavior {
         }
         return true;
     }
+
     /**
      * Before find we need to convert date fields to sqlformat
      *
      * @todo   Optimize cycle, really poor implementation here
+     * @todo   fix containable behavior
      * @return Array
      **/
-    public function beforeFind(Model $model, $query = array() ) {
+    public function beforeFind(Model $model, $query = array()) {
         parent::beforeFind($model, $query);
 
-        if ($model->findQueryType == 'count') return $query;
-
+        if ($model->findQueryType == 'count') {
+            return $query;
+        }
         //-- if conditions exists
         if (isset($query['conditions']) && is_array($query['conditions'])) {
             $columnTypes = $model->getColumnTypes();
             $fields = array_filter($columnTypes, array($this, 'valueIsDate'));
 
             //-- Get all conditions keys
-            $conditionsKeys  = array_keys($query['conditions']);
-            $walked          = array();
+            $conditionsKeys = array_keys($query['conditions']);
+            $walked = array();
 
-            foreach($conditionsKeys as $conKey) {
+            foreach ($conditionsKeys as $conKey) {
                 $cond = explode(' ', $conKey);
-                $cond[0] = str_replace($model->name.'.', null, $cond[0]);
+                $cond[0] = str_replace($model->name . '.', null, $cond[0]);
                 if (!array_key_exists($cond[0], $fields)) {
                     continue;
                 }
                 $values = $query['conditions'][$conKey];
-                if (is_array($values) ) {
-                    foreach($values as $key => $date) {
+                if (is_array($values)) {
+                    foreach ($values as $key => $date) {
                         $tmpdate = $this->dateObject($date);
                         $query['conditions'][$conKey][$key] = $this->ObjectToSQL($tmpdate);
                     }
                     $walked[$conKey] = $query['conditions'][$conKey];
-                }
-                elseif(is_string($values)) {
-                  $curObj = $this->dateObject($values);
-                  $walked[$conKey] = $this->ObjectToSQL($curObj);
+                } elseif (is_string($values)) {
+                    $curObj = $this->dateObject($values);
+                    if (!$curObj) {
+                        continue;
+                    }
+                    $walked[$conKey] = $this->ObjectToSQL($curObj);
                 }
             }
             $query['conditions'] = array_merge($query['conditions'], $walked);
         }
         return $query;
     }
+
     /**
      * AfterFind
      **/
     public function afterFind(Model $model, $results = array(), $primary = false) {
         parent::afterFind($model, $results, $primary);
 
-        if ($model->findQueryType == 'count') return $results;
+        if ($model->findQueryType == 'count') {
+            return $results;
+        }
 
         $curObj = $model->alias;
         foreach ($results as $key => $value) {
 
             $tmpkeys = array_keys($value);
 
-            foreach($tmpkeys as $curmodel) {
+            foreach ($tmpkeys as $curmodel) {
 
                 $curObj = ($curmodel != $model->alias) ? $model->{$curmodel} : $model;
 
@@ -133,13 +147,15 @@ class AutodateBehavior extends ModelBehavior {
                 /**
                  * @todo Array walk might be a solution for deeper associations?
                  **/
-                foreach($fields as $field => $fieldvalue) {
+                foreach ($fields as $field => $fieldvalue) {
 
-                    $curvalues  = $results[$key][$curmodel];
+                    $curvalues = $results[$key][$curmodel];
                     $dimensions = Hash::dimensions($curvalues);
 
-                    if($dimensions <= 1) {
-                        if (!array_key_exists($field, $results[$key][$curmodel])) continue;
+                    if ($dimensions <= 1) {
+                        if (!array_key_exists($field, $results[$key][$curmodel])) {
+                            continue;
+                        }
                         $results[$key][$curmodel][$field] = $this->formatDate($results[$key][$curmodel][$field]);
                         continue;
                     }
@@ -148,6 +164,7 @@ class AutodateBehavior extends ModelBehavior {
         }
         return $results;
     }
+
     /**
      * AfterSave
      **/
@@ -157,58 +174,61 @@ class AutodateBehavior extends ModelBehavior {
         $columnTypes = $model->getColumnTypes();
         $fields = array_filter($columnTypes, array($this, 'valueIsDate'));
 
-        foreach($fields as $field => $value) {
-            if (!array_key_exists($field, $model->data[$model->alias])) continue;
+        foreach ($fields as $field => $value) {
+            if (!array_key_exists($field, $model->data[$model->alias])) {
+                continue;
+            }
             $model->data[$model->alias][$field] = $this->formatDate($model->data[$model->alias][$field]);
         }
     }
+
     /**
      * @todo   Add extra date Format
      * @return Array|False
      **/
-    private function dateObject( $date) {
+    private function dateObject($date) {
         /**
          * @todo do we need a default here?
          **/
-        switch( $this->settings['dateformat'] ) {
+        switch ($this->settings['dateformat']) {
 
             case 'd-m-Y':
             case 'd/m/Y':
-                list( $d, $m, $y ) = preg_split( '/[-\.\/ ]/', $date );
-             break;
+                list($d, $m, $y) = preg_split('/[-\.\/ ]/', $date);
+                break;
 
             case 'Y/m/d':
             case 'Y-m-d':
-                list( $y, $m, $d ) = preg_split( '/[-\.\/ ]/', $date );
-             break;
+                list($y, $m, $d) = preg_split('/[-\.\/ ]/', $date);
+                break;
 
             case 'Y-d-m':
             case 'Y/d/m':
-                list( $y, $d, $m ) = preg_split( '/[-\.\/ ]/', $date );
-             break;
+                list($y, $d, $m) = preg_split('/[-\.\/ ]/', $date);
+                break;
 
             case 'm-d-Y':
             case 'm/d/Y':
-                list( $m, $d, $y ) = preg_split( '/[-\.\/ ]/', $date );
-             break;
+                list($m, $d, $y) = preg_split('/[-\.\/ ]/', $date);
+                break;
 
             case 'Ymd':
-                $y = substr( $date, 0, 4 );
-                $m = substr( $date, 4, 2 );
-                $d = substr( $date, 6, 2 );
-             break;
+                $y = substr($date, 0, 4);
+                $m = substr($date, 4, 2);
+                $d = substr($date, 6, 2);
+                break;
 
             case 'Ydm':
-                $y = substr( $date, 0, 4 );
-                $d = substr( $date, 4, 2 );
-                $m = substr( $date, 6, 2 );
-             break;
+                $y = substr($date, 0, 4);
+                $d = substr($date, 4, 2);
+                $m = substr($date, 6, 2);
+                break;
         }
         $y = intval($y);
         $m = intval($m);
         $d = intval($d);
 
-        if (!checkdate( $m, $d, $y )) {
+        if (!checkdate($m, $d, $y)) {
             return false;
         }
 
@@ -218,22 +238,25 @@ class AutodateBehavior extends ModelBehavior {
             'year' => $y
         );
     }
+
     /**
      * @return String
      **/
     private function ObjectToSQL(Array $date) {
-        return $date['year'].'-'.$date['month'].'-'.$date['day'];
+        return $date['year'] . '-' . $date['month'] . '-' . $date['day'];
     }
+
     /**
      * @return Bool
      **/
     private function valueIsDate($value) {
         return (in_array($value, $this->columntypes));
     }
+
     /**
      * @return Date
      **/
     private function formatDate($date) {
-        return date($this->settings['dateformat'], strtotime($date) );
+        return date($this->settings['dateformat'], strtotime($date));
     }
 }

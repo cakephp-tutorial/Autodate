@@ -1,7 +1,8 @@
-# Autodate V 1.0.1 #
-
 A CakePHP Plugin that will auto convert date fields from SQL format to a chosen date format (eg: d/m/Y).
 Will auto convert the date before saving to database, before find (to match conditions on db), after find and after update
+
+[![Total Downloads](https://img.shields.io/packagist/dt/cakephp-tutorial/autodate.svg?style=flat-square)](https://packagist.org/packages/cakephp-tutorial/autodate)
+[![Latest Stable Version](https://img.shields.io/packagist/v/cakephp-tutorial/autodate.svg?style=flat-square)](https://packagist.org/packages/cakephp-tutorial/autodate)
 
 ## Requirements ##
 
